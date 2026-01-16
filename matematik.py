@@ -1,92 +1,154 @@
-import streamlit as st
+# matematik.py
 import random
 import time
+import streamlit as st
 
 from ui import apply_ui_css, render_feedback, set_feedback
-from tema import tema_uygula
-from veritabani import verileri_getir, puan_artir, puan_dusur, puanlari_sifirla
 
-SOUND_OK = "https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"
-SOUND_FAIL = "https://www.soundjay.com/misc/sounds/fail-trumpet-01.mp3"
+# Projendeki veritabanı fonksiyonları (varsa bunları kullanır)
+try:
+    from veritabani import puan_artir, puan_dusur, verileri_getir
+except Exception:
+    puan_artir = None
+    puan_dusur = None
+    verileri_getir = None
 
 
+# -----------------------
+# Yardımcılar
+# -----------------------
+def _yeni_soru_uret():
+    s1 = random.randint(2, 9)
+    s2 = random.randint(2, 9)
+    dogru = s1 * s2
+
+    yanlislar = set()
+    while len(yanlislar) < 3:
+        aday = random.randint(4, 81)
+        if aday != dogru:
+            yanlislar.add(aday)
+
+    secenekler = list(yanlislar) + [dogru]
+    random.shuffle(secenekler)
+
+    st.session_state.s1 = s1
+    st.session_state.s2 = s2
+    st.session_state.dogru = dogru
+    st.session_state.secenekler = secenekler
+    st.session_state.soru_baslangic = time.time()
+
+
+def _soru_var_mi():
+    return all(k in st.session_state for k in ["s1", "s2", "dogru", "secenekler", "soru_baslangic"])
+
+
+def _soruyu_sifirla():
+    for k in ["s1", "s2", "dogru", "secenekler", "soru_baslangic"]:
+        st.session_state.pop(k, None)
+
+
+def _puan_guncelle(dogru_mu: bool):
+    # Senin projende bu fonksiyonlar varsa kullanır
+    if dogru_mu and callable(puan_artir):
+        puan_artir("matematik")
+    elif (not dogru_mu) and callable(puan_dusur):
+        puan_dusur("matematik")
+
+
+def _puan_100_kontrol():
+    if callable(verileri_getir):
+        try:
+            puanlar = verileri_getir()
+            return int(puanlar.get("toplam_puan", 0)) >= 100
+        except Exception:
+            return False
+    return False
+
+
+# -----------------------
+# Oyun
+# -----------------------
 def carpma_oyunu():
     apply_ui_css()
     render_feedback()
 
-    tema_uygula("mavi")
+    st.title("🧮 Çarpma Oyunu")
+    st.caption("Doğru seçeneğe tıkla! Hazırsan başlayalım 🌟")
 
-    if st.button("🔙 Ana Menüye Dön"):
-        st.session_state.sayfa = "ana_ekran"
-        for k in ["s1", "s2", "dogru", "secenekler", "m_zaman"]:
-            st.session_state.pop(k, None)
-        st.rerun()
-
-    puanlar = verileri_getir()
-
-    st.subheader("🎯 Hedef: 100 Puan")
-    st.progress(min(1.0, puanlar["matematik_dogru"] / 100))
-    st.caption(f"{puanlar['matematik_dogru']} / 100 puan")
-
-    if puanlar["matematik_dogru"] >= 100:
-        st.balloons()
-        st.success("🏆 MATEMATİK ŞAMPİYONU OLDUN!")
-        st.audio(SOUND_OK, autoplay=True)
-        if st.button("✨ YENİ OYUN ✨"):
-            puanlari_sifirla("matematik")
+    col_top = st.columns([1, 1, 1])
+    with col_top[0]:
+        if st.button("🏠 Ana Menü", use_container_width=True):
+            st.switch_page("ana_ekran.py")
+    with col_top[1]:
+        if st.button("🔄 Yeni Soru", use_container_width=True):
+            _soruyu_sifirla()
             st.rerun()
-        return
+    with col_top[2]:
+        pass
 
-    if "m_zaman" not in st.session_state:
-        st.session_state.m_zaman = time.time()
+    st.divider()
 
-    kalan = max(0, int(20 - (time.time() - st.session_state.m_zaman)))
-    st.progress(kalan / 20)
-    st.write(f"⏱️ Kalan: {kalan}")
+    # Soru yoksa üret
+    if not _soru_var_mi():
+        _yeni_soru_uret()
 
+    # Süre ayarı
+    SURE_SANIYE = 10
+    gecen = time.time() - st.session_state.soru_baslangic
+    kalan = max(0.0, SURE_SANIYE - gecen)
+
+    # Süre göstergesi
+    st.progress(int(((SURE_SANIYE - kalan) / SURE_SANIYE) * 100))
+    st.markdown(f"⏳ Kalan süre: **{kalan:.1f} saniye**")
+
+    # Süre bitti mi?
     if kalan <= 0:
-        puan_dusur("matematik")
-        st.audio(SOUND_FAIL, autoplay=True)
-        st.info("⏰ Süre doldu… Yeni soruya geçiyoruz! 🌟")
-        time.sleep(1.3)
-        for k in ["s1", "s2", "dogru", "secenekler", "m_zaman"]:
-            st.session_state.pop(k, None)
+        _puan_guncelle(False)
+        set_feedback("time", "⏰ Süre Bitti", "Ama denediğin için çok iyisin 👏")
+        _soruyu_sifirla()
         st.rerun()
 
-    if "s1" not in st.session_state:
-        st.session_state.s1 = random.randint(2, 9)
-        st.session_state.s2 = random.randint(2, 9)
-        st.session_state.dogru = st.session_state.s1 * st.session_state.s2
+    # Soru
+    st.markdown(
+        f"<h2 style='text-align:center; font-size:42px; margin: 10px 0;'>"
+        f"{st.session_state.s1} × {st.session_state.s2} = ?</h2>",
+        unsafe_allow_html=True
+    )
 
-        yanlislar = random.sample(
-            [x for x in range(4, 82) if x != st.session_state.dogru], 3
-        )
-        st.session_state.secenekler = yanlislar + [st.session_state.dogru]
-        random.shuffle(st.session_state.secenekler)
+    st.write("")
 
-    st.header(f"{st.session_state.s1} x {st.session_state.s2} = ?")
-
-    cols = st.columns(4)
+    # Seçenekler
+    cols = st.columns(2)
     secilen = None
-    for i, deger in enumerate(st.session_state.secenekler):
-        if cols[i].button(str(deger), key=f"m_{i}", use_container_width=True):
-            secilen = deger
 
+    for i, deger in enumerate(st.session_state.secenekler):
+        with cols[i % 2]:
+            if st.button(f"{deger}", key=f"opt_{i}", use_container_width=True):
+                secilen = deger
+
+    # Seçim yapıldıysa değerlendir
     if secilen is not None:
         if secilen == st.session_state.dogru:
-            puan_artir("matematik")
-            st.audio(SOUND_OK, autoplay=True)
-            st.success("✅ Süper! Doğru cevap! 🎉")
-            st.balloons()
+            _puan_guncelle(True)
+
+            # 100 puan olduysa özel kutlama
+            if _puan_100_kontrol():
+                set_feedback("ok", "🎉 100 PUAN!", "Harikasın! Büyük başarı 🌟")
+            else:
+                set_feedback("ok", "🎉 TEBRİKLER!", "Harika bir cevap verdin 🌟")
+
+            _soruyu_sifirla()
+            st.rerun()
         else:
-            puan_dusur("matematik")
-            st.audio(SOUND_FAIL, autoplay=True)
-            st.info("🙂 Sorun değil, birlikte öğreniyoruz!")
+            _puan_guncelle(False)
+            set_feedback("try", "🙂 Olsun!", "Bir dahaki soruda başarabilirsin 💪")
+            _soruyu_sifirla()
+            st.rerun()
 
-        time.sleep(1.3)
-        for k in ["s1", "s2", "dogru", "secenekler", "m_zaman"]:
-            st.session_state.pop(k, None)
-        st.rerun()
-
-    time.sleep(0.5)
+    # Süreyi akıcı güncellemek için küçük yenileme
+    time.sleep(0.15)
     st.rerun()
+
+
+if __name__ == "__main__":
+    carpma_oyunu()
