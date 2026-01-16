@@ -5,6 +5,7 @@ from veritabani import verileri_getir, tum_verileri_temizle
 from matematik import carpma_oyunu
 from ingilizce import ingilizce_oyunu
 from turkce import zit_anlam_oyunu
+from ui import apply_ui_css, render_feedback
 
 def buyuk_basari_kontrol(puanlar):
     """
@@ -163,6 +164,10 @@ def _stil():
 
 
 def ana_menu():
+    apply_ui_css()
+    render_feedback()
+
+
     tema_secici()
     _stil()
 
