@@ -211,81 +211,70 @@ def ana_menu():
     puanlar = verileri_getir()
     buyuk_basari_kontrol(puanlar)
 
-    st.markdown(
-        """
-        <div class="hero">
-            <h1>Canım Kızım Roza ❤️</h1>
-            <p>Bugün hangi oyunu oynamak istersin? 🎮✨</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    # ÜST KARŞILAMA
+    st.markdown("""
+    <div class="hero">
+        <h1>Canım Kızım Roza ❤️</h1>
+        <p>Bugün hangi oyunu oynamak istersin? 🎮✨</p>
+    </div>
+    """, unsafe_allow_html=True)
 
+    # PUAN PANELİ
     colA, colB = st.columns([3, 1])
+
     with colA:
-        st.markdown(
-            f"""
-            <div class="panel">
-                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                    <span class="chip">🏆 Toplam Puan: {puanlar["toplam_puan"]}</span>
-                    <span class="chip">🧮 Matematik: {puanlar["matematik_dogru"]//10} doğru</span>
-                    <span class="chip">🇬🇧 İngilizce: {puanlar["ingilizce_dogru"]//10} doğru</span>
-                    <span class="chip">📚 Türkçe: {puanlar["turkce_dogru"]//10} doğru</span>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        st.markdown(f"""
+        <div class="panel">
+            <span class="chip">🏆 Toplam Puan: {puanlar["toplam_puan"]}</span>
+            <span class="chip">🧮 Matematik: {puanlar["matematik_dogru"]}/10</span>
+            <span class="chip">🇬🇧 İngilizce: {puanlar["ingilizce_dogru"]}/10</span>
+            <span class="chip">📘 Türkçe: {puanlar["turkce_dogru"]}/10</span>
+        </div>
+        """, unsafe_allow_html=True)
+
     with colB:
         if st.button("🗑️ Sıfırla", use_container_width=True):
             tum_verileri_temizle()
             st.rerun()
 
     st.write("")
-    st.subheader("🌟 Oyun Kartları")
+    st.subheader("⭐ Oyun Kartları")
 
+    # OYUN KARTLARI
     c1, c2, c3 = st.columns(3)
 
     with c1:
-        st.markdown(
-            """
-            <div class="card" style="background: linear-gradient(135deg, rgba(255,241,168,0.95) 0%, rgba(255,209,242,0.95) 100%);">
-                <div class="card-title">🧮 Matematik</div>
-                <div class="card-desc">Çarpma sorularıyla hızlanalım!</div>
-                <span class="chip">⚡ 20 saniye</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        if st.button("✖️ Çarpma Oyununa Başla", use_container_width=True):
-            st.session_state.sayfa = "matematik"
-            st.rerun()
+        st.markdown("""
+        <div class="game-card">
+            <h2>🧮 Matematik</h2>
+            <p>Çarpma sorularıyla hızlanalım!</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        if st.button("Başla", key="mat"):
+            st.switch_page("matematik.py")
 
     with c2:
-        st.markdown(
-            """
-            <div class="card" style="background: linear-gradient(135deg, rgba(200,255,241,0.95) 0%, rgba(200,215,255,0.95) 100%);">
-                <div class="card-title">🇬🇧 İngilizce</div>
-                <div class="card-desc">Kelimeleri emojilerle öğrenelim!</div>
-                <span class="chip">🎯 100 puan hedef</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        if st.button("🇬🇧 İngilizce Oyununa Başla", use_container_width=True):
-            st.session_state.sayfa = "ingilizce"
-            st.rerun()
+        st.markdown("""
+        <div class="game-card">
+            <h2>🇬🇧 İngilizce</h2>
+            <p>Kelimeleri öğren, eğlen!</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        if st.button("Başla", key="ing"):
+            st.switch_page("ingilizce.py")
 
     with c3:
-        st.markdown(
-            """
-            <div class="card" style="background: linear-gradient(135deg, rgba(231,255,184,0.95) 0%, rgba(184,255,247,0.95) 100%);">
-                <div class="card-title">📚 Türkçe</div>
-                <div class="card-desc">Zıt anlamları bul, yıldızları topla!</div>
-                <span class="chip">🌈 Eğlenceli</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
+        st.markdown("""
+        <div class="game-card">
+            <h2>📘 Türkçe</h2>
+            <p>Dil bilgisiyle güçlen!</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        if st.button("Başla", key="trk"):
+            st.switch_page("turkce.py")
         )
         if st.button("↔️ Zıt Anlam Oyununa Başla", use_container_width=True):
             st.session_state.sayfa = "turkce"
