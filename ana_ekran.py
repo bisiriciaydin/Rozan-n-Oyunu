@@ -1,6 +1,48 @@
 # ana_ekran.py
 import streamlit as st
 
+import streamlit as st
+
+def apply_mobile_friendly_css():
+    st.markdown("""
+    <style>
+    body {
+        color: #111111;
+        font-weight: 600;
+    }
+
+    .game-card {
+        background: white;
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h1, h2, h3 {
+        font-weight: 700;
+        color: #111111;
+    }
+
+    button {
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        background-color: #111827 !important;
+        color: white !important;
+        border-radius: 12px !important;
+        padding: 12px 20px !important;
+    }
+
+    @media (max-width: 768px) {
+        h1 { font-size: 24px; }
+        h2 { font-size: 20px; }
+        p  { font-size: 16px; }
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+apply_mobile_friendly_css()
+
 from veritabani import verileri_getir, tum_verileri_temizle
 from matematik import carpma_oyunu
 from ingilizce import ingilizce_oyunu
