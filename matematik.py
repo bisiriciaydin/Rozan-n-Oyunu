@@ -2,6 +2,7 @@ import streamlit as st
 import random
 import time
 
+from ui import apply_ui_css, render_feedback, set_feedback
 from tema import tema_uygula
 from veritabani import verileri_getir, puan_artir, puan_dusur, puanlari_sifirla
 
@@ -10,6 +11,9 @@ SOUND_FAIL = "https://www.soundjay.com/misc/sounds/fail-trumpet-01.mp3"
 
 
 def carpma_oyunu():
+    apply_ui_css()
+    render_feedback()
+
     tema_uygula("mavi")
 
     if st.button("🔙 Ana Menüye Dön"):
