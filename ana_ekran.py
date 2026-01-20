@@ -7,7 +7,13 @@ from tema import tema_secici
 import matematik
 import ingilizce
 import turkce
+# ---- SAYFA DURUMU ----
+if "sayfa" not in st.session_state:
+    st.session_state.sayfa = "menu"
 
+def sayfaya_git(hedef):
+    st.session_state.sayfa = hedef
+    st.rerun()
 
 def menu_ekrani():
     tema_secici()
@@ -18,61 +24,43 @@ def menu_ekrani():
 
     st.markdown("""
     <div class="hero">
-        <h1>Canım Kızım Roza ❤️</h1>
-        <p>Bugün hangi oyunu oynamak istersin? 🎮✨</p>
+        <h1>Canım Kızım Roza 💖</h1>
+        <p>Bugün hangi oyunu oynamak istersin 🎮✨</p>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown(f"""
-    🏆 Toplam Puan: **{puanlar["toplam_puan"]}**  
-    🧮 Matematik: {puanlar["matematik_dogru"]}/10  
-    🇬🇧 İngilizce: {puanlar["ingilizce_dogru"]}/10  
-    📘 Türkçe: {puanlar["turkce_dogru"]}/10  
+    🏆 Toplam Puan: **{puanlar["toplam_puan"]}**
+    🧮 Matematik: {puanlar["matematik_dogru"]}/10
+    📘 İngilizce: {puanlar["ingilizce_dogru"]}/10
+    📗 Türkçe: {puanlar["turkce_dogru"]}/10
     """)
 
-    colA, colB = st.columns([3, 1])
-    with colB:
-        if st.button("🗑️ Sıfırla", use_container_width=True):
-            tum_verileri_temizle()
-            st.rerun()
+    # ⬇⬇⬇ İŞTE BU KISIM (GİRİNTİ ŞART)
+    st.markdown("### 🎮 Oyunlar")
 
-    st.write("")
-    st.subheader("⭐ Oyunlar")
+    col1, col2, col3 = st.columns(3)
 
-    c1, c2, c3 = st.columns(3)
+    with col1:
+        st.button(
+            "🧮 Matematik",
+            use_container_width=True,
+            on_click=lambda: sayfaya_git("matematik")
+        )
 
-    with c1:
-        st.markdown("""
-        <div class="game-card">
-            <h2>🧮 Matematik</h2>
-            <p>Çarpma sorularıyla hızlan!</p>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Başla", key="go_mat", use_container_width=True):
-            st.session_state.page = "matematik"
-            st.rerun()
+    with col2:
+        st.button(
+            "📘 Türkçe",
+            use_container_width=True,
+            on_click=lambda: sayfaya_git("turkce")
+        )
 
-    with c2:
-        st.markdown("""
-        <div class="game-card">
-            <h2>🇬🇧 İngilizce</h2>
-            <p>Kelimeleri öğren!</p>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Başla", key="go_ing", use_container_width=True):
-            st.session_state.page = "ingilizce"
-            st.rerun()
-
-    with c3:
-        st.markdown("""
-        <div class="game-card">
-            <h2>📘 Türkçe</h2>
-            <p>Dil bilgisiyle güçlen!</p>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Başla", key="go_trk", use_container_width=True):
-            st.session_state.page = "turkce"
-            st.rerun()
+    with col3:
+        st.button(
+            "🌍 İngilizce",
+            use_container_width=True,
+            on_click=lambda: sayfaya_git("ingilizce")
+        )
 
 
 def app_router():
