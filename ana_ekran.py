@@ -90,4 +90,129 @@ def sayfaya_git(hedef: str):
 # -----------------------------
 # Kutlama (100 puan)
 # -----------------------------
-def kutlam
+def kutlama_ekrani(puanlar: dict):
+    st.balloons()
+    st.markdown(
+        f"""
+        <div class="roza-card">
+            <h1>🎉 Yaşasın Roza!</h1>
+            <h3>100 puana ulaştın! ⭐</h3>
+            <p class="roza-small">Toplam Puan: <b>{puanlar.get("toplam_puan", 0)}</b></p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.button("🏠 Ana Menüye Dön", use_container_width=True, on_click=lambda: sayfaya_git("menu"))
+
+    st.markdown("### ✨ İstersen yeni bir oyun seçelim!")
+    st.button("🧮 Matematik Oyna", use_container_width=True, on_click=lambda: sayfaya_git("matematik"))
+    st.button("📘 Türkçe Oyna", use_container_width=True, on_click=lambda: sayfaya_git("turkce"))
+    st.button("🌍 İngilizce Oyna", use_container_width=True, on_click=lambda: sayfaya_git("ingilizce"))
+
+
+# -----------------------------
+# Ana Menü (iPhone)
+# -----------------------------
+def menu_ekrani():
+    tema_secici()        # sidebar tema seçimi (istersen kapatırız)
+    apply_ui_css()       # senin mevcut UI stilin
+    mobil_css()          # iPhone dokunuşu
+    render_feedback()
+
+    puanlar = verileri_getir()
+    toplam = puanlar.get("toplam_puan", 0)
+
+    st.markdown(
+        """
+        <div class="roza-hero">
+            <h1>Canım Kızım Roza 💖</h1>
+            <p class="roza-small">Bugün hangi oyunu oynamak istersin? 🎮✨</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        f"""
+        <div class="roza-card">
+            <h3>🏆 Puan Tablosu</h3>
+            <p>Toplam Puan: <b>{toplam}</b></p>
+            <p class="roza-small">
+                🧮 Matematik: {puanlar.get("matematik_dogru", 0)}/10 &nbsp; | &nbsp;
+                🌍 İngilizce: {puanlar.get("ingilizce_dogru", 0)}/10 &nbsp; | &nbsp;
+                📘 Türkçe: {puanlar.get("turkce_dogru", 0)}/10
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # 100 puan yakalandıysa kutlama sayfasına geçir
+    if toplam >= 100:
+        st.session_state.page = "kutlama"
+        st.rerun()
+
+    st.markdown("### 🎮 Oyun Seç")
+    st.button("🧮 Matematik (Çarpma Oyunu)", use_container_width=True, on_click=lambda: sayfaya_git("matematik"))
+    st.button("📘 Türkçe", use_container_width=True, on_click=lambda: sayfaya_git("turkce"))
+    st.button("🌍 İngilizce", use_container_width=True, on_click=lambda: sayfaya_git("ingilizce"))
+
+    st.markdown("---")
+
+    # Sıfırlama (mobilde yanlış basılmasın diye uyarı)
+    with st.expander("⚙️ Ayarlar"):
+        st.caption("Puanları sıfırlamak istersen buradan yapabilirsin.")
+        if st.button("🧼 Puanları Sıfırla", use_container_width=True):
+            tum_verileri_temizle()
+            st.session_state.page = "menu"
+            st.rerun()
+
+
+# -----------------------------
+# Router
+# -----------------------------
+def app_router():
+    init_state()
+
+    # Her sayfada mobil görünüm + tema + feedback uygulanabilir
+    # (İstersen sadece menüde uygularız)
+    try:
+        mobil_css()
+    except Exception:
+        pass
+
+    puanlar = verileri_getir()
+    toplam = puanlar.get("toplam_puan", 0)
+
+    # Kutlama eşiği
+    if toplam >= 100 and st.session_state.page != "kutlama":
+        st.session_state.page = "kutlama"
+
+    if st.session_state.page == "menu":
+        menu_ekrani()
+
+    elif st.session_state.page == "kutlama":
+        kutlama_ekrani(puanlar)
+
+    elif st.session_state.page == "matematik":
+        # Mevcut fonksiyon adını bozmayalım
+        matematik.carpma_oyunu()
+
+        # Modül içinde ana menü butonu yoksa, altta güvenli geri dönüş:
+        st.button("🏠 Ana Menü", use_container_width=True, on_click=lambda: sayfaya_git("menu"))
+
+    elif st.session_state.page == "turkce":
+        turkce.turkce_oyunu()
+        st.button("🏠 Ana Menü", use_container_width=True, on_click=lambda: sayfaya_git("menu"))
+
+    elif st.session_state.page == "ingilizce":
+        ingilizce.ingilizce_oyunu()
+        st.button("🏠 Ana Menü", use_container_width=True, on_click=lambda: sayfaya_git("menu"))
+
+    else:
+        st.session_state.page = "menu"
+        st.rerun()
+
+
+app_router()
