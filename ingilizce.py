@@ -2,7 +2,6 @@ import streamlit as st
 import random
 import time
 
-from tema import tema_uygula
 from veritabani import verileri_getir, puan_artir, puan_dusur, puanlari_sifirla
 
 SOUND_OK = "https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"
